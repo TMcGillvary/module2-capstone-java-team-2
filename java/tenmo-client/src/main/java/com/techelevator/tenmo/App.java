@@ -25,26 +25,19 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 	private static final String MAIN_MENU_OPTION_VIEW_PENDING_REQUESTS = "View your pending requests";
 	private static final String MAIN_MENU_OPTION_LOGIN = "Login as different user";
 	private static final String[] MAIN_MENU_OPTIONS = { MAIN_MENU_OPTION_VIEW_BALANCE, MAIN_MENU_OPTION_SEND_BUCKS, MAIN_MENU_OPTION_VIEW_PAST_TRANSFERS, MAIN_MENU_OPTION_REQUEST_BUCKS, MAIN_MENU_OPTION_VIEW_PENDING_REQUESTS, MAIN_MENU_OPTION_LOGIN, MENU_OPTION_EXIT };
-	private static AuthenticatedUser currentUser;
 
-
+	private AuthenticatedUser currentUser;
     private ConsoleService console;
     private AuthenticationService authenticationService;
 
-    private AccountBalanceService accountBalanceService;
-
-
-
-
     public static void main(String[] args) {
-    	App app = new App(new ConsoleService(System.in, System.out), new AuthenticationService(API_BASE_URL), new AccountBalanceService(API_BASE_URL, currentUser));
+    	App app = new App(new ConsoleService(System.in, System.out), new AuthenticationService(API_BASE_URL));
     	app.run();
     }
 
-    public App(ConsoleService console, AuthenticationService authenticationService, AccountBalanceService accountBalanceService) {
+    public App(ConsoleService console, AuthenticationService authenticationService) {
 		this.console = console;
 		this.authenticationService = authenticationService;
-		this.accountBalanceService = accountBalanceService;
 	}
 
 	public void run() {
@@ -79,15 +72,15 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 	}
 
 	private void viewCurrentBalance() {
-    	try {
+		AccountBalanceService accountBalanceService = new AccountBalanceService(API_BASE_URL, currentUser);
+
+		try {
 			BigDecimal balance = accountBalanceService.getBalance();
 			System.out.println("\nYour current balance is: $" + balance);
-		} catch(NullPointerException e) {
+		} catch (NullPointerException e) {
 			System.out.println("No balance found");
-
 		}
-		// TODO Auto-generated method stub
-		
+
 	}
 
 	private void viewTransferHistory() {
