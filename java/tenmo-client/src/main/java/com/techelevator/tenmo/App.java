@@ -2,10 +2,12 @@ package com.techelevator.tenmo;
 
 import com.techelevator.tenmo.model.Account;
 import com.techelevator.tenmo.model.AuthenticatedUser;
+import com.techelevator.tenmo.model.Transfer;
 import com.techelevator.tenmo.model.UserCredentials;
 import com.techelevator.tenmo.services.AccountBalanceService;
 import com.techelevator.tenmo.services.AuthenticationService;
 import com.techelevator.tenmo.services.AuthenticationServiceException;
+import com.techelevator.tenmo.services.TransferService;
 import com.techelevator.view.ConsoleService;
 
 import java.math.BigDecimal;
@@ -95,7 +97,36 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 
 	private void sendBucks() {
 		// TODO Auto-generated method stub
-		
+		TransferService transferService = new TransferService(API_BASE_URL, currentUser);
+		AccountBalanceService accountBalanceService = new AccountBalanceService(API_BASE_URL, currentUser);
+		System.out.println(transferService.getAllUsers());
+
+		int userIDtoTransferTo = console.getUserInputInteger("Select user to send funds to");
+
+		if (userIDtoTransferTo == currentUser.getUser().getId()) {
+			System.out.println("Sorry, you can't send money to yourself");
+			mainMenu();
+		}
+
+		BigDecimal transferAmount = new BigDecimal(console.getUserInputInteger("Enter amount to transfer"));
+
+		if (accountBalanceService.getBalance().compareTo(transferAmount) < 0) {
+			System.out.println("Sorry, you're trying to transfer more money than you have");
+			mainMenu();
+		} else if (transferAmount.compareTo(BigDecimal.ZERO) < 0) {
+			System.out.println("Sorry, please enter a valid amount to transfer");
+			mainMenu();
+		} else {
+			Transfer transfer = new Transfer();
+			transfer.setAccountFrom(currentUser.getUser().getId());
+			transfer.setAccountTo(userIDtoTransferTo);
+			transfer.setAmount(transferAmount);
+
+			transferService.sendTransfer(transfer);
+
+			System.out.println("Successfully sent $" + transferAmount);
+		}
+
 	}
 
 	private void requestBucks() {

@@ -2,6 +2,7 @@ package com.techelevator.tenmo.dao;
 
 import com.techelevator.tenmo.model.Account;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Service;
@@ -9,13 +10,12 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 
 @Service
-
 public class JDBCAccountBalanceDAO implements AccountBalanceDAO {
+
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
     public JDBCAccountBalanceDAO() {
-
     }
 
     public JDBCAccountBalanceDAO(JdbcTemplate jdbcTemplate) {
@@ -63,5 +63,38 @@ public class JDBCAccountBalanceDAO implements AccountBalanceDAO {
         return balance;
     }
 
+    @Override
+    public BigDecimal addToBalance(BigDecimal amountToAdd, int accountID) {
+        Account account = findAccountByID(accountID);
+
+        BigDecimal newBalance = account.getBalance().add(amountToAdd);
+
+        String sql = "UPDATE accounts SET balance = ? WHERE account_id = ?";
+
+        try {
+            jdbcTemplate.update(sql, newBalance, accountID);
+        } catch (DataAccessException e) {
+            System.out.println("Error updating amounts, please try again"); // custom exception?
+        }
+
+        return account.getBalance();
+    }
+
+    @Override
+    public BigDecimal subtractFromBalance(BigDecimal amountToSubtract, int accountID) {
+        Account account = findAccountByID(accountID);
+
+        BigDecimal newBalance = account.getBalance().subtract(amountToSubtract);
+
+        String sql = "UPDATE accounts SET balance = ? WHERE account_id = ?";
+
+        try {
+            jdbcTemplate.update(sql, newBalance, accountID);
+        } catch (DataAccessException e) {
+            System.out.println("Error updating amounts, please try again"); // custom exception?
+        }
+
+        return account.getBalance();
+    }
 
 }

@@ -32,6 +32,7 @@ public class AccountBalanceController {
         BigDecimal balance = accountBalanceDAO.getBalance(userId);
         return balance;
     }
+
     @GetMapping(path = "userlist/")
     public List<User> userList() {
         List<User> userList = userDao.findAll();
