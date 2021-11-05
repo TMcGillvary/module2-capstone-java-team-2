@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -27,8 +28,9 @@ public class AccountBalanceController {
         this.userDao = userDao;
     }
 
-    @GetMapping(path = "balance/{userId}")
-    public BigDecimal getBalance(@PathVariable int userId) {
+    @GetMapping(path = "balance/")
+    public BigDecimal getBalance(Principal user) {
+        int userId = accountBalanceDAO.findUserByUsername(user).getUserID();
         BigDecimal balance = accountBalanceDAO.getBalance(userId);
         return balance;
     }

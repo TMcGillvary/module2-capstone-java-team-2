@@ -17,19 +17,17 @@ import java.util.List;
 public class TransferService {
 
     private String API_BASE_URL;
-    private AuthenticatedUser currentUser;
     private RestTemplate restTemplate = new RestTemplate();
 
-    public TransferService(String url, AuthenticatedUser currentUser) {
-        this.currentUser = currentUser;
+    public TransferService(String url) {
         API_BASE_URL = url;
     }
 
-    public List<User> getAllUsers() {
+    public List<User> getAllUsers(AuthenticatedUser currentUser) {
         User[] allUsersArray = null;
         List<User> newUsers = new ArrayList<>();
 
-        allUsersArray = restTemplate.exchange(API_BASE_URL + "userlist/", HttpMethod.GET, makeAuthEntity(), User[].class).getBody();
+        allUsersArray = restTemplate.exchange(API_BASE_URL + "userlist/", HttpMethod.GET, makeAuthEntity(currentUser), User[].class).getBody();
 
         Collections.addAll(newUsers, allUsersArray); // might need to do exception
 
@@ -37,9 +35,9 @@ public class TransferService {
     }
 
 
-    public void sendTransfer(Transfer transfer) {
+    public void sendTransfer(Transfer transfer, AuthenticatedUser currentUser) {
         try {
-            restTemplate.exchange(API_BASE_URL + "sendtransfer/", HttpMethod.POST, makeTransferEntity(transfer), Transfer.class);
+            restTemplate.exchange(API_BASE_URL + "sendtransfer/", HttpMethod.POST, makeTransferEntity(transfer, currentUser), Transfer.class);
         } catch (RestClientResponseException rcEx) {
             System.out.println(rcEx.getRawStatusCode() + " : " + rcEx.getResponseBodyAsString());
         }
@@ -47,7 +45,7 @@ public class TransferService {
     }
 
 
-    private HttpEntity<Transfer> makeTransferEntity(Transfer transfer) {
+    private HttpEntity<Transfer> makeTransferEntity(Transfer transfer, AuthenticatedUser currentUser) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(currentUser.getToken());
@@ -55,7 +53,7 @@ public class TransferService {
         return entity;
     }
 
-    private HttpEntity makeAuthEntity() {
+    private HttpEntity makeAuthEntity(AuthenticatedUser currentUser) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(currentUser.getToken());
         HttpEntity entity = new HttpEntity<>(headers);

@@ -8,6 +8,7 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.security.Principal;
 
 @Service
 public class JDBCAccountBalanceDAO implements AccountBalanceDAO {
@@ -38,6 +39,17 @@ public class JDBCAccountBalanceDAO implements AccountBalanceDAO {
         Account account = null;
         String sql = "SELECT account_id, user_id, balance FROM accounts WHERE user_id = ?";
         SqlRowSet results = jdbcTemplate.queryForRowSet(sql, userId);
+        if (results.next()) {
+            account = mapRowToAccount(results);
+        }
+        return account;
+    }
+
+    @Override
+    public Account findUserByUsername(Principal user) {
+        Account account = null;
+        String sql = "SELECT accounts.account_id, accounts.user_id, accounts.balance FROM accounts JOIN users ON accounts.user_id = users.user_id WHERE username = ?";
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, user.getName());
         if (results.next()) {
             account = mapRowToAccount(results);
         }

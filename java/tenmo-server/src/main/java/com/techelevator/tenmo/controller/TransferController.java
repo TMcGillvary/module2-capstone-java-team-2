@@ -25,6 +25,7 @@ public class TransferController {
         transfer.setAccountFrom(userFrom.getAccountID());
         Account userTo = accountBalanceDAO.findUserById(transfer.getAccountTo());
         transfer.setAccountTo(userTo.getAccountID());
+        //TODO custom user not found exception7
 
         transferDAO.sendTransfer(transfer.getAccountFrom(), transfer.getAccountTo(), transfer.getAmount());
     }

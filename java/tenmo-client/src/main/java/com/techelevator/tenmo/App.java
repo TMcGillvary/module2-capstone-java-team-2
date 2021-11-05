@@ -8,6 +8,7 @@ import com.techelevator.tenmo.services.TransferService;
 import com.techelevator.view.ConsoleService;
 
 import java.math.BigDecimal;
+import java.security.Principal;
 
 public class App {
 
@@ -28,6 +29,8 @@ public class App {
     private AuthenticatedUser currentUser;
     private ConsoleService console;
     private AuthenticationService authenticationService;
+    private AccountBalanceService accountBalanceService;
+    private TransferService transferService;
 
 
     public static void main(String[] args) {
@@ -38,6 +41,8 @@ public class App {
     public App(ConsoleService console, AuthenticationService authenticationService) {
         this.console = console;
         this.authenticationService = authenticationService;
+        this.accountBalanceService = new AccountBalanceService(API_BASE_URL);
+        this.transferService = new TransferService(API_BASE_URL);
     }
 
     public void run() {
@@ -51,18 +56,15 @@ public class App {
 
     private void mainMenu() {
         while (true) {
-            AccountBalanceService accountBalanceService = new AccountBalanceService(API_BASE_URL, currentUser);
-            TransferService transferService = new TransferService(API_BASE_URL, currentUser);
-
             String choice = (String) console.getChoiceFromOptions(MAIN_MENU_OPTIONS);
             if (MAIN_MENU_OPTION_VIEW_BALANCE.equals(choice)) {
-                viewCurrentBalance(accountBalanceService);
+                viewCurrentBalance(currentUser);
             } else if (MAIN_MENU_OPTION_VIEW_PAST_TRANSFERS.equals(choice)) {
                 viewTransferHistory();
             } else if (MAIN_MENU_OPTION_VIEW_PENDING_REQUESTS.equals(choice)) {
                 viewPendingRequests();
             } else if (MAIN_MENU_OPTION_SEND_BUCKS.equals(choice)) {
-                sendBucks(accountBalanceService, transferService);
+                sendBucks(currentUser);
             } else if (MAIN_MENU_OPTION_REQUEST_BUCKS.equals(choice)) {
                 requestBucks();
             } else if (MAIN_MENU_OPTION_LOGIN.equals(choice)) {
@@ -74,10 +76,10 @@ public class App {
         }
     }
 
-    private void viewCurrentBalance(AccountBalanceService accountBalanceService) {
+    private void viewCurrentBalance(AuthenticatedUser currentUser) {
 
         try {
-            BigDecimal balance = accountBalanceService.getBalance();
+            BigDecimal balance = accountBalanceService.getBalance(currentUser);
             System.out.println("\nYour current balance is: $" + balance);
         } catch (NullPointerException e) {
             System.out.println("No balance found");
@@ -95,27 +97,27 @@ public class App {
 
     }
 
-    private static void displayUserListCorrectly(TransferService transferService) {
+    private void displayUserListCorrectly() {
         System.out.println("╔══════════════════════════════════════════╗");
         System.out.println("                List of Users               ");
         System.out.println("╚══════════════════════════════════════════╝");
-        for (User eachLine : transferService.getAllUsers()) {
+        for (User eachLine : transferService.getAllUsers(currentUser)) {
             System.out.println(eachLine);
         }
         System.out.println("══════════════════════════════════════════");
     }
 
-    private void sendBucks(AccountBalanceService accountBalanceService, TransferService transferService) {
+    private void sendBucks(AuthenticatedUser currentUser) {
 
-        displayUserListCorrectly(transferService);
+        displayUserListCorrectly();
 
         // TODO if userID is not a valid ID, say sorry they're not a user, try again
-        int validUserID = checkForValidUserId(transferService);
+        int validUserID = checkForValidUserId(currentUser);
 
         BigDecimal transferAmount = new BigDecimal(console.getUserInputInteger("Enter amount to transfer"));
 
         try {
-			if (accountBalanceService.getBalance().compareTo(transferAmount) < 0) {
+			if (accountBalanceService.getBalance(currentUser).compareTo(transferAmount) < 0) {
 				System.out.println("Sorry, you're trying to transfer more money than you have");
 				mainMenu();
 			} else if (transferAmount.compareTo(BigDecimal.ZERO) < 0) {
@@ -128,7 +130,7 @@ public class App {
 				transfer.setAccountTo(validUserID);
 				transfer.setAmount(transferAmount);
 
-				transferService.sendTransfer(transfer);
+				transferService.sendTransfer(transfer, currentUser);
 
 				System.out.println("Successfully sent $" + transferAmount);
 			}
@@ -138,7 +140,7 @@ public class App {
 		}
     }
 
-    private int checkForValidUserId(TransferService transferService) {
+    private int checkForValidUserId(AuthenticatedUser currentUser) {
 		int userIDtoTransferTo = console.getUserInputInteger("Select user to send funds to");
 
 		if (userIDtoTransferTo == currentUser.getUser().getId()) {
@@ -148,7 +150,7 @@ public class App {
 
         boolean validUserId = false;
 
-        for (User user : transferService.getAllUsers()) {
+        for (User user : transferService.getAllUsers(currentUser)) {
             if (user.getId().equals(userIDtoTransferTo)) {
                 validUserId = true;
                 break;
@@ -159,7 +161,7 @@ public class App {
             System.out.println("That is not a valid User.");
 			userIDtoTransferTo = console.getUserInputInteger("Select user to send funds to");
 
-            for (User user : transferService.getAllUsers()) {
+            for (User user : transferService.getAllUsers(currentUser)) {
                 if (user.getId().equals(userIDtoTransferTo)) {
                     validUserId = true;
                     break;
