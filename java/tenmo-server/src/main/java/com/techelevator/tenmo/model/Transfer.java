@@ -10,6 +10,8 @@ public class Transfer {
     private int accountFrom;
     private int accountTo;
     private BigDecimal amount;
+
+    // username display
     private String toUserName;
     private String fromUserName;
 
