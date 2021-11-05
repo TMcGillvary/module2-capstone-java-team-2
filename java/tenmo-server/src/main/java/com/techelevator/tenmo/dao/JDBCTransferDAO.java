@@ -19,10 +19,10 @@ public class JDBCTransferDAO implements TransferDAO {
     public Integer sendTransfer(int accountFrom, int accountTo, BigDecimal amount) {
         String sql = "INSERT INTO transfers (transfer_type_id, transfer_status_id, account_from, account_to, amount) " +
                 "VALUES (2, 2, ?, ?, ?) RETURNING transfer_id"; // hard coding in the transfer type and status ID for now based on the README
-        Integer newTransferID = null;
+        Integer newTransferID = -1;
 
         try {
-            newTransferID = jdbcTemplate.update(sql, accountFrom, accountTo, amount);
+            newTransferID = jdbcTemplate.queryForObject(sql, Integer.class, accountFrom, accountTo, amount);
             accountBalanceDAO.addToBalance(amount, accountTo);
             accountBalanceDAO.subtractFromBalance(amount, accountFrom); // TODO fix this
         } catch (DataAccessException e) {

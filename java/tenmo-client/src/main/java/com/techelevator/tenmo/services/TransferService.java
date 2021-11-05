@@ -7,6 +7,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
@@ -35,9 +36,14 @@ public class TransferService {
         return newUsers;
     }
 
-    // TODO: check to make sure we don't need account ID in here
+
     public void sendTransfer(Transfer transfer) {
-        restTemplate.exchange(API_BASE_URL + "sendtransfer/", HttpMethod.POST, makeTransferEntity(transfer), Transfer.class);
+        try {
+            restTemplate.exchange(API_BASE_URL + "sendtransfer/", HttpMethod.POST, makeTransferEntity(transfer), Transfer.class);
+        } catch (RestClientResponseException rcEx) {
+            System.out.println(rcEx.getRawStatusCode() + " : " + rcEx.getResponseBodyAsString());
+        }
+
     }
 
 

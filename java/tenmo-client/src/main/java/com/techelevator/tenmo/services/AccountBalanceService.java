@@ -16,7 +16,6 @@ public class AccountBalanceService {
     public AccountBalanceService(String url, AuthenticatedUser currentUser) {
         this.currentUser = currentUser;
         API_BASE_URL = url;
-
     }
 
     private HttpEntity makeAuthEntity() {
@@ -32,22 +31,6 @@ public class AccountBalanceService {
               HttpMethod.GET, makeAuthEntity(), BigDecimal.class).getBody();
       return balance;
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 }
 

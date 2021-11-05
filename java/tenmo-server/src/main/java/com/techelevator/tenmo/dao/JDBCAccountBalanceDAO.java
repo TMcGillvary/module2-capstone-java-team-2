@@ -25,7 +25,7 @@ public class JDBCAccountBalanceDAO implements AccountBalanceDAO {
     @Override
     public Account findAccountByID(int id) {
         Account account = null;
-        String sql = "SELECT account_id, user_id, balance FROM accounts WHERE account_id =?";
+        String sql = "SELECT account_id, user_id, balance FROM accounts WHERE account_id = ?";
         SqlRowSet results = jdbcTemplate.queryForRowSet(sql, id);
         if (results.next()) {
             account = mapRowToAccount(results);
@@ -33,18 +33,10 @@ public class JDBCAccountBalanceDAO implements AccountBalanceDAO {
         return account;
     }
 
-    private Account mapRowToAccount(SqlRowSet result) {
-        Account account = new Account();
-        account.setAccountID(result.getInt("account_id"));
-        account.setUserID(result.getInt("user_id"));
-        account.setBalance(result.getBigDecimal("balance"));
-        return account;
-    }
-
     @Override
     public Account findUserById(int userId) {
         Account account = null;
-        String sql = "SELECT account_id, user_id, balance FROM accounts WHERE user_id =?";
+        String sql = "SELECT account_id, user_id, balance FROM accounts WHERE user_id = ?";
         SqlRowSet results = jdbcTemplate.queryForRowSet(sql, userId);
         if (results.next()) {
             account = mapRowToAccount(results);
@@ -64,17 +56,17 @@ public class JDBCAccountBalanceDAO implements AccountBalanceDAO {
     }
 
     @Override
-    public BigDecimal addToBalance(BigDecimal amountToAdd, int accountID) {
-        Account account = findAccountByID(accountID);
+    public BigDecimal addToBalance(BigDecimal amountToAdd, int userID) {
+        Account account = findAccountByID(userID);
 
         BigDecimal newBalance = account.getBalance().add(amountToAdd);
 
         String sql = "UPDATE accounts SET balance = ? WHERE account_id = ?";
 
         try {
-            jdbcTemplate.update(sql, newBalance, accountID);
+            jdbcTemplate.update(sql, newBalance, userID);
         } catch (DataAccessException e) {
-            System.out.println("Error updating amounts, please try again"); // custom exception?
+            System.out.println("Error updating amounts, Unable to add to balance"); // custom exception?
         }
 
         return account.getBalance();
@@ -91,10 +83,20 @@ public class JDBCAccountBalanceDAO implements AccountBalanceDAO {
         try {
             jdbcTemplate.update(sql, newBalance, accountID);
         } catch (DataAccessException e) {
-            System.out.println("Error updating amounts, please try again"); // custom exception?
+            System.out.println("Error updating amounts, Unable to subtract from balance"); // custom exception?
         }
 
         return account.getBalance();
     }
 
+
+
+    // helper method to map row from DB to an Account object
+    private Account mapRowToAccount(SqlRowSet result) {
+        Account account = new Account();
+        account.setAccountID(result.getInt("account_id"));
+        account.setUserID(result.getInt("user_id"));
+        account.setBalance(result.getBigDecimal("balance"));
+        return account;
+    }
 }
