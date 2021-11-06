@@ -56,10 +56,9 @@ public class JDBCTransferDAO implements TransferDAO {
                 Transfer transfer = mapRowToTransfer(results);
 
                 // this part is to convert the account IDs back to the usernames for each person
-                //TODO is the find account by id isn't me for the from, pull the other user's account and set as the from
                 User user = userDao.findUserByAccountID(transfer.getAccountFrom());
                 transfer.setFromUserName(user.getUsername());
-                // TODO if the find account by ID isn't me, pull the other user's account and set as the to
+
                 user = userDao.findUserByAccountID(transfer.getAccountTo());
                 transfer.setToUserName(user.getUsername());
 
