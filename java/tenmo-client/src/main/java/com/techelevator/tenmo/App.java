@@ -1,6 +1,9 @@
 package com.techelevator.tenmo;
 
-import com.techelevator.tenmo.model.*;
+import com.techelevator.tenmo.model.AuthenticatedUser;
+import com.techelevator.tenmo.model.Transfer;
+import com.techelevator.tenmo.model.User;
+import com.techelevator.tenmo.model.UserCredentials;
 import com.techelevator.tenmo.services.AccountBalanceService;
 import com.techelevator.tenmo.services.AuthenticationService;
 import com.techelevator.tenmo.services.AuthenticationServiceException;
@@ -8,8 +11,6 @@ import com.techelevator.tenmo.services.TransferService;
 import com.techelevator.view.ConsoleService;
 
 import java.math.BigDecimal;
-import java.security.Principal;
-import java.util.ArrayList;
 import java.util.List;
 
 public class App {
@@ -63,6 +64,7 @@ public class App {
                 viewCurrentBalance(currentUser);
             } else if (MAIN_MENU_OPTION_VIEW_PAST_TRANSFERS.equals(choice)) {
                 viewTransferHistory(currentUser);
+                viewTransferDetails(currentUser);
             } else if (MAIN_MENU_OPTION_VIEW_PENDING_REQUESTS.equals(choice)) {
                 viewPendingRequests();
             } else if (MAIN_MENU_OPTION_SEND_BUCKS.equals(choice)) {
@@ -91,21 +93,63 @@ public class App {
 
     private void viewTransferHistory(AuthenticatedUser currentUser) {
         List<Transfer> transferList = transferService.getTransferHistory(currentUser);
-        if (transferList.isEmpty()){
+        if (transferList.isEmpty()) {
             System.out.println("No transfer history to display");
-        }else {
+        } else {
             for (Transfer transfer : transferList) {
                 int id = transfer.getTransferId();
                 String fromUser = transfer.getFromUserName();
                 String toUser = transfer.getToUserName();
                 BigDecimal amount = transfer.getAmount();
 
-                String formattedTransferlist = String.format("ID: %-10d | From: %-10s | To: %-10s | Amount: $%-6.2f",id, fromUser, toUser,amount);
+                String formattedTransferlist = String.format("ID: %-10d | From: %-10s | To: %-10s | Amount: $%-6.2f", id, fromUser, toUser, amount);
                 System.out.println(formattedTransferlist);
 
             }
 
         }
+
+    }
+
+    private void viewTransferDetails(AuthenticatedUser currentUser) {
+        int transferId = console.getUserInputInteger("Please enter ID to proceed");
+        List<Transfer> transferList = transferService.getTransferHistory(currentUser);
+        boolean validId = false;
+        if (transferId == 0) {
+            System.out.println("Not a valid entry");
+            mainMenu();
+        } else {
+            for (Transfer transfer : transferList) {
+                if (transfer.getTransferId() == transferId) {
+                    validId = true;
+                    String type = "";
+                    String status = "";
+                    if (transfer.getTransferTypeId() == 1) {
+                        type = "Request";
+                    } else if (transfer.getTransferTypeId() == 2) {
+                        type = "Send";
+                    }
+
+                    if (transfer.getTransferStatusId() == 1) {
+                        status = "Pending";
+                    } else if (transfer.getTransferStatusId() == 2) {
+                        status = "Approved";
+                    } else if (transfer.getTransferStatusId() == 3) {
+                        status = "Rejected";
+                    }
+                    String formattedTransfer = String.format("Transfer ID: %-10d | Transfer Type: %-10s | Transfer Status: %-10s \n From: %d %-20s | To: %d %-20s | Amount: $%-6.2f",
+                            transfer.getTransferId(), type, status, transfer.getAccountFrom(), transfer.getFromUserName(), transfer.getAccountTo(), transfer.getToUserName(),
+                            transfer.getAmount());
+                    System.out.println(formattedTransfer);
+
+                }
+                if(validId == false) {
+                    System.out.println("Enter a valid ID");
+                    viewTransferDetails(currentUser);
+                }
+            }
+        }
+
 
     }
 
@@ -115,7 +159,7 @@ public class App {
     }
 
     private void displayUserListCorrectly() {
-        System.out.println("╔══════════════════════════════════════════╗");
+        System.out.println("╔═════tr═════════════════════════════════════╗");
         System.out.println("                List of Users               ");
         System.out.println("╚══════════════════════════════════════════╝");
         for (User eachLine : transferService.getAllUsers(currentUser)) {
@@ -134,36 +178,36 @@ public class App {
         BigDecimal transferAmount = new BigDecimal(console.getUserInputInteger("Enter amount to transfer"));
 
         try {
-			if (accountBalanceService.getBalance(currentUser).compareTo(transferAmount) < 0) {
-				System.out.println("Sorry, you're trying to transfer more money than you have");
-				mainMenu();
-			} else if (transferAmount.compareTo(BigDecimal.ZERO) < 0) {
-				System.out.println("Sorry, please enter a valid amount to transfer");
-				mainMenu();
-			} else {
+            if (accountBalanceService.getBalance(currentUser).compareTo(transferAmount) < 0) {
+                System.out.println("Sorry, you're trying to transfer more money than you have");
+                mainMenu();
+            } else if (transferAmount.compareTo(BigDecimal.ZERO) < 0) {
+                System.out.println("Sorry, please enter a valid amount to transfer");
+                mainMenu();
+            } else {
 
-				Transfer transfer = new Transfer();
-				transfer.setAccountFrom(currentUser.getUser().getId());
-				transfer.setAccountTo(validUserID);
-				transfer.setAmount(transferAmount);
+                Transfer transfer = new Transfer();
+                transfer.setAccountFrom(currentUser.getUser().getId());
+                transfer.setAccountTo(validUserID);
+                transfer.setAmount(transferAmount);
 
-				transferService.sendTransfer(transfer, currentUser);
+                transferService.sendTransfer(transfer, currentUser);
 
-				System.out.println("Successfully sent $" + transferAmount);
-			}
-		} catch (Exception e) {
+                System.out.println("Successfully sent $" + transferAmount);
+            }
+        } catch (Exception e) {
 
-			System.out.println("Something went wrong.");
-		}
+            System.out.println("Something went wrong.");
+        }
     }
 
     private int checkForValidUserId(AuthenticatedUser currentUser) {
-		int userIDtoTransferTo = console.getUserInputInteger("Select user to send funds to");
+        int userIDtoTransferTo = console.getUserInputInteger("Select user to send funds to");
 
-		if (userIDtoTransferTo == currentUser.getUser().getId()) {
-			System.out.println("Sorry, you can't send money to yourself");
-			mainMenu();
-		}
+        if (userIDtoTransferTo == currentUser.getUser().getId()) {
+            System.out.println("Sorry, you can't send money to yourself");
+            mainMenu();
+        }
 
         boolean validUserId = false;
 
@@ -176,7 +220,7 @@ public class App {
 
         while (!validUserId) {
             System.out.println("That is not a valid User.");
-			userIDtoTransferTo = console.getUserInputInteger("Select user to send funds to");
+            userIDtoTransferTo = console.getUserInputInteger("Select user to send funds to");
 
             for (User user : transferService.getAllUsers(currentUser)) {
                 if (user.getId().equals(userIDtoTransferTo)) {
