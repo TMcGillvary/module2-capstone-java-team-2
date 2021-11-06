@@ -56,10 +56,11 @@ public class JDBCTransferDAO implements TransferDAO {
                 Transfer transfer = mapRowToTransfer(results);
 
                 // this part is to convert the account IDs back to the usernames for each person
-                User user = userDao.findUserByAccountID(accountID);
+                //TODO is the find account by id isn't me for the from, pull the other user's account and set as the from
+                User user = userDao.findUserByAccountID(transfer.getAccountFrom());
                 transfer.setFromUserName(user.getUsername());
-
-                user = userDao.findUserByAccountID(accountID);
+                // TODO if the find account by ID isn't me, pull the other user's account and set as the to
+                user = userDao.findUserByAccountID(transfer.getAccountTo());
                 transfer.setToUserName(user.getUsername());
 
                 listOfTransfers.add(transfer);
@@ -72,8 +73,24 @@ public class JDBCTransferDAO implements TransferDAO {
     }
 
     @Override
-    public Transfer getTransferById(int transactionId) {
-        return null;
+    public Transfer getTransferById(int transferID) {
+        Transfer transfer = new Transfer();
+        String sql = "SELECT transfer_id, transfer_type_id, transfer_status_id, account_from, account_to, amount "
+                + "FROM transfers WHERE transfer_id = ?";
+        try {
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, transferID);
+
+            while (results.next()) {
+                transfer = mapRowToTransfer(results);
+                User user = userDao.findUserByAccountID(transfer.getAccountFrom());
+                transfer.setFromUserName(user.getUsername());
+                user = userDao.findUserByAccountID(transfer.getAccountTo());
+                transfer.setToUserName(user.getUsername());
+            }
+        } catch (DataAccessException e) {
+            System.out.println("There was an error getting the transfer object for that ID, please check."); // TODO look at custom exception here
+        }
+        return transfer;
     }
 
     private Transfer mapRowToTransfer(SqlRowSet results) {

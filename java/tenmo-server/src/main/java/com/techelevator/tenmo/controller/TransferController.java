@@ -5,11 +5,9 @@ import com.techelevator.tenmo.dao.TransferDAO;
 import com.techelevator.tenmo.model.Account;
 import com.techelevator.tenmo.model.Transfer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
@@ -23,6 +21,7 @@ public class TransferController {
     @Autowired
     AccountBalanceDAO accountBalanceDAO;
 
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping(path = "sendtransfer/")
     public void sendTransfer(@RequestBody Transfer transfer) {
         Account userFrom = accountBalanceDAO.findUserById(transfer.getAccountFrom());
@@ -37,6 +36,11 @@ public class TransferController {
     @GetMapping(path = "transferslist/")
     public List<Transfer> getListOfTransfers(Principal user) {
         return transferDAO.getAllTransfers(user);
+    }
+
+    @GetMapping(path = "transferslist/{transferID}")
+    public Transfer getTransferById(@PathVariable int transferID) {
+        return transferDAO.getTransferById(transferID);
     }
 
 }

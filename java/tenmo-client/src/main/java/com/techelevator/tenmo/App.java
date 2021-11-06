@@ -82,7 +82,7 @@ public class App {
 
         try {
             BigDecimal balance = accountBalanceService.getBalance(currentUser);
-            System.out.println("\nYour current balance is: $" + balance);
+            System.out.println("Your current balance is: $" + balance);
         } catch (NullPointerException e) {
             System.out.println("No balance found");
         }
@@ -90,8 +90,7 @@ public class App {
     }
 
     private void viewTransferHistory(AuthenticatedUser currentUser) {
-        List<Transfer> transferList = new ArrayList<Transfer>();
-        transferList = transferService.getTransferHistory(currentUser);
+        List<Transfer> transferList = transferService.getTransferHistory(currentUser);
         if (transferList.isEmpty()){
             System.out.println("No transfer history to display");
         }else {
@@ -101,7 +100,7 @@ public class App {
                 String toUser = transfer.getToUserName();
                 BigDecimal amount = transfer.getAmount();
 
-                String formattedTransferlist = String.format("ID: %-10d | From: %-20s | To: %-20s | Amount: $%f",id, fromUser, toUser,amount);
+                String formattedTransferlist = String.format("ID: %-10d | From: %-10s | To: %-10s | Amount: $%-6.2f",id, fromUser, toUser,amount);
                 System.out.println(formattedTransferlist);
 
             }

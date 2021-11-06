@@ -12,7 +12,7 @@ public interface TransferDAO {
 
     public List<Transfer> getAllTransfers(Principal currentUser);
 
-    public Transfer getTransferById(int transactionId);
+    public Transfer getTransferById(int transferId);
 
 }
 
