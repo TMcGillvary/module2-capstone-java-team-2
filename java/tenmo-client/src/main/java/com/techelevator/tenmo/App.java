@@ -9,6 +9,8 @@ import com.techelevator.view.ConsoleService;
 
 import java.math.BigDecimal;
 import java.security.Principal;
+import java.util.ArrayList;
+import java.util.List;
 
 public class App {
 
@@ -60,7 +62,7 @@ public class App {
             if (MAIN_MENU_OPTION_VIEW_BALANCE.equals(choice)) {
                 viewCurrentBalance(currentUser);
             } else if (MAIN_MENU_OPTION_VIEW_PAST_TRANSFERS.equals(choice)) {
-                viewTransferHistory();
+                viewTransferHistory(currentUser);
             } else if (MAIN_MENU_OPTION_VIEW_PENDING_REQUESTS.equals(choice)) {
                 viewPendingRequests();
             } else if (MAIN_MENU_OPTION_SEND_BUCKS.equals(choice)) {
@@ -87,8 +89,24 @@ public class App {
 
     }
 
-    private void viewTransferHistory() {
-        // TODO Auto-generated method stub
+    private void viewTransferHistory(AuthenticatedUser currentUser) {
+        List<Transfer> transferList = new ArrayList<Transfer>();
+        transferList = transferService.getTransferHistory(currentUser);
+        if (transferList.isEmpty()){
+            System.out.println("No transfer history to display");
+        }else {
+            for (Transfer transfer : transferList) {
+                int id = transfer.getTransferId();
+                String fromUser = transfer.getFromUserName();
+                String toUser = transfer.getToUserName();
+                BigDecimal amount = transfer.getAmount();
+
+                String formattedTransferlist = String.format("ID: %-10d | From: %-20s | To: %-20s | Amount: $%f",id, fromUser, toUser,amount);
+                System.out.println(formattedTransferlist);
+
+            }
+
+        }
 
     }
 
@@ -135,7 +153,7 @@ public class App {
 				System.out.println("Successfully sent $" + transferAmount);
 			}
 		} catch (Exception e) {
-        	// TODO gotta make a catch exception for if any of the try doesn't work so it doesn't just print successful! even as it breaks
+
 			System.out.println("Something went wrong.");
 		}
     }

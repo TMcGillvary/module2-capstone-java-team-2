@@ -43,6 +43,13 @@ public class TransferService {
         }
 
     }
+    public List<Transfer> getTransferHistory(AuthenticatedUser currentUser){
+        List<Transfer> transferList = new ArrayList<Transfer>();
+        Transfer[] allTransfersArray = null;
+        allTransfersArray = restTemplate.exchange(API_BASE_URL + "transferslist/", HttpMethod.GET, makeAuthEntity(currentUser), Transfer[].class).getBody();
+        Collections.addAll(transferList, allTransfersArray);
+        return transferList;
+    }
 
 
     private HttpEntity<Transfer> makeTransferEntity(Transfer transfer, AuthenticatedUser currentUser) {
