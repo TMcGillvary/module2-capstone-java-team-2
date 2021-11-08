@@ -11,6 +11,7 @@ import com.techelevator.tenmo.services.TransferService;
 import com.techelevator.view.ConsoleService;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 public class App {
@@ -113,7 +114,9 @@ public class App {
 
     private void viewTransferDetails(AuthenticatedUser currentUser) {
         int transferId = console.getUserInputInteger("Please enter ID to proceed");
-        List<Transfer> transferList = transferService.getTransferHistory(currentUser);
+        List<Transfer> transferList = new ArrayList<>();
+        Transfer transferObject = transferService.getTransferById(transferId, currentUser);
+        transferList.add(transferObject);
         boolean validId = false;
         if (transferId == 0) {
             System.out.println("Not a valid entry");
@@ -121,7 +124,6 @@ public class App {
         } else {
             for (Transfer transfer : transferList) {
                 if (transfer.getTransferId() == transferId) {
-                    validId = true;
                     String type = "";
                     String status = "";
                     if (transfer.getTransferTypeId() == 1) {
@@ -141,11 +143,11 @@ public class App {
                             transfer.getTransferId(), type, status, transfer.getAccountFrom(), transfer.getFromUserName(), transfer.getAccountTo(), transfer.getToUserName(),
                             transfer.getAmount());
                     System.out.println(formattedTransfer);
-
+                    validId = true;
                 }
                 if(validId == false) {
-                    System.out.println("Enter a valid ID");
-                    viewTransferDetails(currentUser);
+                    System.out.println("Not a valid ID, Enter a valid ID");
+                    mainMenu();
                 }
             }
         }

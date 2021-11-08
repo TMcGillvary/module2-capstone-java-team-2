@@ -43,6 +43,7 @@ public class TransferService {
         }
 
     }
+
     public List<Transfer> getTransferHistory(AuthenticatedUser currentUser){
         List<Transfer> transferList = new ArrayList<Transfer>();
         Transfer[] allTransfersArray = null;
@@ -50,6 +51,7 @@ public class TransferService {
         Collections.addAll(transferList, allTransfersArray);
         return transferList;
     }
+
     public Transfer getTransferById(int transferId, AuthenticatedUser currentUser){
         Transfer transfer = restTemplate.exchange(API_BASE_URL + "transferslist/" + transferId, HttpMethod.GET, makeAuthEntity(currentUser),Transfer.class ).getBody();
         return transfer;
