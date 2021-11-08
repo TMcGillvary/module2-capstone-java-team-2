@@ -137,7 +137,7 @@ public class App {
                     } else if (transfer.getTransferStatusId() == 3) {
                         status = "Rejected";
                     }
-                    String formattedTransfer = String.format("Transfer ID: %-10d | Transfer Type: %-10s | Transfer Status: %-10s \n From: %d %-20s | To: %d %-20s | Amount: $%-6.2f",
+                    String formattedTransfer = String.format("Transfer ID: %-10d | Transfer Type: %-10s | Transfer Status: %-10s\nFrom: %d %-20s | To: %d %-20s | Amount: $%-6.2f",
                             transfer.getTransferId(), type, status, transfer.getAccountFrom(), transfer.getFromUserName(), transfer.getAccountTo(), transfer.getToUserName(),
                             transfer.getAmount());
                     System.out.println(formattedTransfer);

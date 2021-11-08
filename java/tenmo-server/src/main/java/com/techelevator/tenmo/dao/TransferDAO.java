@@ -15,4 +15,3 @@ public interface TransferDAO {
     public Transfer getTransferById(int transferId);
 
 }
-
